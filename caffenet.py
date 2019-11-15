@@ -12,7 +12,7 @@ from collections import OrderedDict
 from prototxt import *
 import caffe
 import caffe.proto.caffe_pb2 as caffe_pb2
-from torch.legacy.nn import SpatialCrossMapLRN as SpatialCrossMapLRNOld
+#from torch.legacy.nn import SpatialCrossMapLRN as SpatialCrossMapLRNOld
 from itertools import product as product
 from detection import Detection, MultiBoxLoss
 
@@ -666,14 +666,16 @@ class CaffeNet(nn.Module):
         blob_width['data'] = 1
         if input_width != None:
             blob_width['data'] = input_width
-        if props.has_key('input_shape'):
+        #if props.has_key('input_shape'):       # python 2.x
+        if 'input_shape' in props:              # python 3.x
             blob_channels['data'] = int(props['input_shape']['dim'][1])
             blob_height['data'] = int(props['input_shape']['dim'][2])
             blob_width['data'] = int(props['input_shape']['dim'][3])
     
             self.width = int(props['input_shape']['dim'][3])
             self.height = int(props['input_shape']['dim'][2])
-        elif props.has_key('input_dim'):
+        # elif props.has_key('input_dim'):      # python 2.x
+        elif 'input_dim' in props:              # python 3.x
             blob_channels['data'] = int(props['input_dim'][1])
             blob_height['data'] = int(props['input_dim'][2])
             blob_width['data'] = int(props['input_dim'][3])
@@ -691,7 +693,8 @@ class CaffeNet(nn.Module):
         while i < layer_num:
             layer = layers[i]
             lname = layer['name']
-            if layer.has_key('include') and layer['include'].has_key('phase'):
+            #if layer.has_key('include') and layer['include'].has_key('phase'):         # python 2.x
+            if 'include' in layer and 'phase' in layer['include']:          # python 3.x
                 phase = layer['include']['phase']
                 lname = lname + '.' + phase
             ltype = layer['type']
@@ -714,14 +717,14 @@ class CaffeNet(nn.Module):
                 channels = blob_channels[bname]
                 out_filters = int(convolution_param['num_output'])
                 kernel_size = int(convolution_param['kernel_size'])
-                stride = int(convolution_param['stride']) if convolution_param.has_key('stride') else 1
-                pad = int(convolution_param['pad']) if convolution_param.has_key('pad') else 0
-                group = int(convolution_param['group']) if convolution_param.has_key('group') else 1
+                stride = int(convolution_param['stride']) if 'stride' in convolution_param else 1 # python 3.x conversion
+                pad = int(convolution_param['pad']) if 'pad' in convolution_param else 0
+                group = int(convolution_param['group']) if 'group' in convolution_param else 1
                 dilation = 1
-                if convolution_param.has_key('dilation'):
+                if 'dilation' in convolution_param:
                     dilation = int(convolution_param['dilation'])
                 bias = True
-                if convolution_param.has_key('bias_term') and convolution_param['bias_term'] == 'false':
+                if 'bias_term' in convolution_param and convolution_param['bias_term'] == 'false':
                     bias = False
                 models[lname] = nn.Conv2d(channels, out_filters, kernel_size=kernel_size, stride=stride, padding=pad, dilation=dilation, groups=group, bias=bias)
                 blob_channels[tname] = out_filters
@@ -730,7 +733,7 @@ class CaffeNet(nn.Module):
                 i = i + 1
             elif ltype == 'BatchNorm':
                 momentum = 0.9
-                if layer.has_key('batch_norm_param') and layer['batch_norm_param'].has_key('moving_average_fraction'):
+                if 'batch_norm_param' in layer and 'moving_average_fraction' in layer['batch_norm_param']:
                     momentum = float(layer['batch_norm_param']['moving_average_fraction'])
                 channels = blob_channels[bname]
                 models[lname] = nn.BatchNorm2d(channels, momentum=momentum, affine=False)
@@ -747,7 +750,7 @@ class CaffeNet(nn.Module):
                 i = i + 1
             elif ltype == 'ReLU':
                 inplace = (bname == tname)
-                if layer.has_key('relu_param') and layer['relu_param'].has_key('negative_slope'):
+                if 'relu_param' in layer and 'negative_slope' in layer['relu_param']:
                     negative_slope = float(layer['relu_param']['negative_slope'])
                     models[lname] = nn.LeakyReLU(negative_slope=negative_slope, inplace=inplace)
                 else:
@@ -760,7 +763,7 @@ class CaffeNet(nn.Module):
                 kernel_size = int(layer['pooling_param']['kernel_size'])
                 stride = int(layer['pooling_param']['stride'])
                 padding = 0
-                if layer['pooling_param'].has_key('pad'):
+                if 'pad' in layer['pooling_param']:
                     padding = int(layer['pooling_param']['pad'])
                 pool_type = layer['pooling_param']['pool']
                 if pool_type == 'MAX':
