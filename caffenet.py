@@ -383,7 +383,7 @@ class CaffeNet(nn.Module):
             self.add_module(name, model)
 
         self.has_mean = False
-        if self.net_info['props'].has_key('mean_file'):
+        if 'mean_file' in self.net_info['props']:
             self.has_mean = True
             self.mean_file = self.net_info['props']['mean_file']
 
@@ -476,9 +476,9 @@ class CaffeNet(nn.Module):
         while i < layer_num:
             layer = layers[i]
             lname = layer['name']
-            if layer.has_key('include') and layer['include'].has_key('phase'):
+            if 'include' in layer and 'phase' in layer['include']:
                 phase = layer['include']['phase']
-                lname = lname + '.' + phase
+                lname = lname + '-' + phase # was '.' by sangkny
                 if phase != self.phase:
                     i = i + 1
                     continue
@@ -595,21 +595,21 @@ class CaffeNet(nn.Module):
         while i < layer_num:
             layer = layers[i]
             lname = layer['name']
-            if layer.has_key('include') and layer['include'].has_key('phase'):
+            if 'include' in layer and 'phase' in layer['include']:
                 phase = layer['include']['phase']
-                lname = lname + '.' + phase
+                lname = lname + '-' + phase # was '.' by sangkny
             ltype = layer['type']
-            if not lmap.has_key(lname):
+            if lname not in lmap:
                 i = i + 1
                 continue
             if ltype in ['Convolution', 'Deconvolution']:
                 print('load weights %s' % lname)
                 convolution_param = layer['convolution_param']
                 bias = True
-                if convolution_param.has_key('bias_term') and convolution_param['bias_term'] == 'false':
+                if 'bias_term' in convolution_param and convolution_param['bias_term'] == 'false':
                     bias = False
-                #weight_blob = lmap[lname].blobs[0]
-                #print('caffe weight shape', weight_blob.num, weight_blob.channels, weight_blob.height, weight_blob.width)
+                weight_blob = lmap[lname].blobs[0]
+                print('caffe weight shape', weight_blob.num, weight_blob.channels, weight_blob.height, weight_blob.width)
                 caffe_weight = np.array(lmap[lname].blobs[0].data)
                 caffe_weight = torch.from_numpy(caffe_weight).view_as(self.models[lname].weight)
                 self.models[lname].weight.data.copy_(caffe_weight)
@@ -634,7 +634,9 @@ class CaffeNet(nn.Module):
             elif ltype == 'InnerProduct':
                 print('load weights %s' % lname)
                 if type(self.models[lname]) == nn.Sequential:
-                    self.models[lname][1].weight.data.copy_(torch.from_numpy(np.array(lmap[lname].blobs[0].data)))
+                    shape_new = self.models[lname][1].weight.shape
+                    #self.models[lname][1].weight.data.copy_(torch.from_numpy(np.array(lmap[lname].blobs[0].data)))
+                    self.models[lname][1].weight.data.copy_(torch.reshape(torch.from_numpy(np.array(lmap[lname].blobs[0].data)), shape_new))
                     if len(lmap[lname].blobs) > 1:
                         self.models[lname][1].bias.data.copy_(torch.from_numpy(np.array(lmap[lname].blobs[1].data)))
                 else:
@@ -696,7 +698,7 @@ class CaffeNet(nn.Module):
             #if layer.has_key('include') and layer['include'].has_key('phase'):         # python 2.x
             if 'include' in layer and 'phase' in layer['include']:          # python 3.x
                 phase = layer['include']['phase']
-                lname = lname + '.' + phase
+                lname = lname + '-' + phase # was '.' by sangkny
             ltype = layer['type']
             tname = layer['top']
             if ltype in ['Data', 'AnnotatedData']:
@@ -777,7 +779,7 @@ class CaffeNet(nn.Module):
                 i = i + 1
             elif ltype == 'Eltwise':
                 operation = 'SUM'
-                if layer.has_key('eltwise_param') and layer['eltwise_param'].has_key('operation'):
+                if 'eltwise_param' in layer and 'operation' in layer['eltwise_param']:
                     operation = layer['eltwise_param']['operation']
                 bname0 = bname[0]
                 bname1 = bname[1]
@@ -862,7 +864,7 @@ class CaffeNet(nn.Module):
                 i = i + 1
             elif ltype == 'Concat':
                 axis = 1
-                if layer.has_key('concat_param') and layer['concat_param'].has_key('axis'):
+                if 'concat_param' in layer and 'axis' in layer['concat_param']:
                     axis = int(layer['concat_param']['axis'])
                 models[lname] = Concat(axis)  
                 if axis == 1:
@@ -881,16 +883,16 @@ class CaffeNet(nn.Module):
             elif ltype == 'PriorBox':
                 min_size = float(layer['prior_box_param']['min_size'])
                 max_size = -1
-                if layer['prior_box_param'].has_key('max_size'):
+                if 'max_size' in layer['prior_box_param']:
                     max_size = float(layer['prior_box_param']['max_size'])
                 aspects = []
-                if layer['prior_box_param'].has_key('aspect_ratio'):
+                if 'aspect_ratio' in layer['prior_box_param']:
                     print(layer['prior_box_param']['aspect_ratio'])
                     aspects = layer['prior_box_param']['aspect_ratio']
                     aspects = [float(aspect) for aspect in aspects]
                 clip = (layer['prior_box_param']['clip'] == 'true')
                 flip = False
-                if layer['prior_box_param'].has_key('flip'):
+                if 'flip' in layer['prior_box_param']:
                     flip = (layer['prior_box_param']['flip'] == 'true')
                 step = int(layer['prior_box_param']['step'])
                 offset = float(layer['prior_box_param']['offset'])
@@ -965,7 +967,7 @@ class CaffeNet(nn.Module):
                 i = i + 1
             elif ltype == 'Softmax':
                 axis = 1
-                if layer.has_key('softmax_param') and layer['softmax_param'].has_key('axis'):
+                if 'softmax_param' in layer and 'axis' in layer['softmax_param']:
                     axis = int(layer['softmax_param']['axis'])
                 models[lname] = Softmax(axis)
                 blob_channels[tname] = blob_channels[bname]

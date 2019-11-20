@@ -8,16 +8,28 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 import time
 
-def load_image(imgfile):
-    image = caffe.io.load_image(imgfile)
-    transformer = caffe.io.Transformer({'data': (1, 3, args.height, args.width)})
-    transformer.set_transpose('data', (2, 0, 1))
-    transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
-    transformer.set_raw_scale('data', args.scale)
-    transformer.set_channel_swap('data', (2, 1, 0))
+def load_image(imgfile, color_input):
+    input_color = color_input
+    image = caffe.io.load_image(imgfile, color=input_color)
+    if input_color:
+        transformer = caffe.io.Transformer({'data': (1, 3, args.height, args.width)}) # sangkny was (1,3, args.height, args.width) is color image
+        transformer.set_transpose('data', (2, 0, 1))
+        transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
+        #transformer.set_mean('data', np.array([128]))
+        transformer.set_raw_scale('data', args.scale)
+        transformer.set_channel_swap('data', (2, 1, 0))
+        image = transformer.preprocess('data', image)
+        image = image.reshape(1, 3, args.height, args.width)
+    else:
+        transformer = caffe.io.Transformer(            {'data': (1, 1, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
+        #transformer.set_transpose('data', (2, 0, 1))
+        #transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
+        transformer.set_mean('data', np.array([args.meanB]))
+        transformer.set_raw_scale('data', args.scale)
+        #transformer.set_channel_swap('data', (2, 1, 0))
+        image = transformer.preprocess('data', image)
+        image = image.reshape(1, 1, args.height, args.width)
 
-    image = transformer.preprocess('data', image)
-    image = image.reshape(1, 3, args.height, args.width)
     return image
 
 def load_synset_words(synset_file):
@@ -28,7 +40,7 @@ def load_synset_words(synset_file):
     return synset_dict
 
 def forward_pytorch(protofile, weightfile, image):
-    net = CaffeNet(protofile, width=args.width, height=args.height, omit_data_layer=True, phase='TEST')
+    net = CaffeNet(protofile, width=args.width, height=args.height, channels= 1, omit_data_layer=True, phase='TEST')
     if args.cuda:
         net.cuda()
     print(net)
@@ -52,7 +64,7 @@ def forward_caffe(protofile, weightfile, image):
     else:
         caffe.set_mode_cpu()
     net = caffe.Net(protofile, weightfile, caffe.TEST)
-    net.blobs['data'].reshape(1, 3, args.height, args.width)
+    net.blobs['data'].reshape(1, 1, args.height, args.width)
     net.blobs['data'].data[...] = image
     t0 = time.time()
     output = net.forward()
@@ -80,10 +92,18 @@ if __name__ == '__main__':
     protofile = args.protofile
     weightfile = args.weightfile
     imgfile = args.imgfile
+    color_input = True
+    image = load_image(imgfile, color_input)
+    # convert the image according to the proper input for protofile
+    # 1 channel
+    # convert already bgr in previous step
+    # gray = np.dot(image[...,:3],[0.114, 0.587, 0.299])
+    image = image[0,0,:,:]
+    image = image.reshape(1,1, 28, 28)
 
-    image = load_image(imgfile)
     time_pytorch, pytorch_blobs, pytorch_models = forward_pytorch(protofile, weightfile, image)
     time_caffe, caffe_blobs, caffe_params = forward_caffe(protofile, weightfile, image)
+
 
     print('pytorch forward time %d', time_pytorch)
     print('caffe forward time %d', time_caffe)
