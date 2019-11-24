@@ -21,7 +21,7 @@ def load_image(imgfile, color_input):
         image = transformer.preprocess('data', image)
         image = image.reshape(1, 3, args.height, args.width)
     else:
-        transformer = caffe.io.Transformer(            {'data': (1, 1, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
+        transformer = caffe.io.Transformer( {'data': (1, 1, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
         #transformer.set_transpose('data', (2, 0, 1))
         #transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
         transformer.set_mean('data', np.array([args.meanB]))

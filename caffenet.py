@@ -28,7 +28,8 @@ class CaffeData(nn.Module):
         props['name'] = 'temp network'
         net_info['props'] = props
         print('CaffeData init phase = %s' % (layer['include']['phase']))
-        if layer.has_key('include'):
+        #if layer.has_key('include'): # python 2.x
+        if 'include' in layer:
             layer.pop('include')
         net_info['layers'] = [layer]
 
@@ -38,7 +39,7 @@ class CaffeData(nn.Module):
         weightfile = '.temp_data%f.caffemodel' % rand_val
         open(weightfile, 'w').close()
         caffe.set_mode_cpu()
-        if layer.has_key('include') and layer['include'] == 'TRAIN':
+        if 'include' in layer and layer['include'] == 'TRAIN':
             self.net = caffe.Net(protofile, weightfile, caffe.TRAIN)
         else:
             self.net = caffe.Net(protofile, weightfile, caffe.TEST)
@@ -504,8 +505,17 @@ class CaffeNet(nn.Module):
                 break
 
             bname = layer['bottom']
+            if bname == 'ip1':
+                kkkk = 1
+
             bnames = bname if type(bname) == list else [bname]
+
+            # for i, name in enumerate(bnames):  # put by sangkny
+            #     if name not in self.blobs:
+            #         del bnames[i]
+
             if True:
+
                 bdatas = [self.blobs[name] for name in bnames]
                 tdatas = self._modules[lname](*bdatas)
                 if type(tdatas) != tuple:
