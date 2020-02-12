@@ -1,0 +1,2 @@
+0 available: no object
+1 occupied: object

@@ -1,4 +1,6 @@
 # 2017.12.16 by xiaohang
+# modified by sangkny for python 3.x and pyTorch 1.2
+
 import random
 import numpy as np
 import math
