@@ -15,6 +15,8 @@ if __name__ == '__main__':
     parser.add_argument('--tgtDir', default='C:\\Users\\mmc\Downloads\\test_result\\1', type=str, help='target directory')
     parser.add_argument('--img_height', default=40, type=int, help='y image size: height')
     parser.add_argument('--img_width', default=32, type=int, help='y image size: width')
+    parser.add_argument('--srcExt', default='y', type=str, help='input extension')
+    parser.add_argument('--tgtExt', default='jpg', type=str, help='target extension')
     parser.add_argument('--showImg', default=True, type=bool, help='flag to show images during process')
     parser.add_argument('--saveImg', default=True, type=bool, help=' flag to save generated images')
     args = parser.parse_args()
@@ -27,14 +29,14 @@ if __name__ == '__main__':
     debug_showImg = args.showImg
     debug_saveImg = args.saveImg
 
-    in_file_ext = 'y'
-    out_file_ext = 'jpg'
+    in_file_ext = args.srcExt #'y'
+    out_file_ext = args.tgtExt #'jpg'
     src_full_path = srcDir+'/*.'+in_file_ext    # find all data
 
     files = os.listdir(srcDir)
 
     for file in files:
-        if(str(file.split('.')[-1]) == in_file_ext):
+        if(str(file.split('.')[-1]).lower() == str(in_file_ext).lower()):
             new_file = file.split('.')[:-1][0] + '.' + out_file_ext
             src_full_path = srcDir + '/' + file
             tgt_full_path = tgtDir + '/' + new_file
