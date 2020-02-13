@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     time_pytorch, pytorch_blobs, pytorch_models = forward_pytorch(protofile, weightfile, image)
 
-    print('pytorch forward time %d', time_pytorch)
+    print('pytorch forward time %d' % time_pytorch)
 
     layer_names = pytorch_models.keys()
     blob_names = pytorch_blobs.keys()
