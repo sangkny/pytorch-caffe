@@ -11,8 +11,8 @@ from y2img import y2img as yToimg
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch Conversion from Y to Image')
-    parser.add_argument('--srcDir', default='C:\\Users\mmc\Downloads\\test_result\\1', type=str, help='base directory')
-    parser.add_argument('--tgtDir', default='C:\\Users\\mmc\Downloads\\test_result\\1', type=str, help='target directory')
+    parser.add_argument('--srcDir', default='D:\\sangkny\\pyTest\\MLDL\\codes\\pytorch-caffe\\data', type=str, help='base directory')
+    parser.add_argument('--tgtDir', default='D:\\sangkny\\pyTest\\MLDL\\codes\\pytorch-caffe\\data1', type=str, help='target directory')
     parser.add_argument('--img_height', default=40, type=int, help='y image size: height')
     parser.add_argument('--img_width', default=32, type=int, help='y image size: width')
     parser.add_argument('--srcExt', default='y', type=str, help='input extension')
@@ -44,5 +44,5 @@ if __name__ == '__main__':
                 os.mkdir(tgtDir)
 
             # y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = True)
-            yToimg(in_y_file=src_full_path, out_imgfile=tgt_full_path, img_height=img_height, img_width=img_width, debug_general=True)
+            yToimg(in_y_file=src_full_path, out_imgfile=tgt_full_path, img_height=img_height, img_width=img_width, debug_general=debug_showImg)
 
