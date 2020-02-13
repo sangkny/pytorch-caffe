@@ -48,7 +48,7 @@ def forward_pytorch(protofile, weightfile, image):
     net = CaffeNet(protofile, width=args.width, height=args.height, channels=1, omit_data_layer=True, phase='TEST')
     if args.cuda:
         net.cuda()
-    print(net)
+    #print(net)
     net.load_weights(weightfile)
     net.eval()
     image = torch.from_numpy(image)
@@ -59,7 +59,7 @@ def forward_pytorch(protofile, weightfile, image):
     t0 = time.time()
     blobs = net(image)
     t1 = time.time()
-    return t1 - t0, blobs, net.models
+    return t1 - t0, blobs, net.models, net
 
 
 # Reference from:
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     output_layer = "fc_blob3" # correct the proper output layer, default:'prob'
     protofile = args.protofile
     weightfile = args.weightfile
-    imgfile = args.imgfile
+    imgfile =  'C:/Users/mmc/Downloads/test_result/0/1.jpg' #args.imgfile
     model_height = args.height
     model_width = args.width
     color_input = True
@@ -111,10 +111,17 @@ if __name__ == '__main__':
     # convert already bgr in previous step
     # gray = np.dot(image[...,:3],[0.114, 0.587, 0.299])
     image = image[0, 0, :, :]
+
+    # --------------------show the given image
+    import cv2
+    cv2.imshow('test', np.array(image/255))
+    cv2.waitKey(1000)
+    # ----------------------------------
     image = image.reshape(1, 1, model_height, model_width)
 
-    time_pytorch, pytorch_blobs, pytorch_models = forward_pytorch(protofile, weightfile, image)
-
+    time_pytorch, pytorch_blobs, pytorch_models, pytorch_net = forward_pytorch(protofile, weightfile, image)
+    print('\n pytorch net \n')
+    print(pytorch_net)
     print('pytorch forward time %d' % time_pytorch)
 
     layer_names = pytorch_models.keys()
