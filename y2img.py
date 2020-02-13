@@ -1,5 +1,10 @@
 #
+# 20200213 by sangkny
+
 # y2img : convert y image to normal format
+# y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = True)
+# binary file i/o example
+
 import os
 import numpy as np
 import cv2
@@ -29,7 +34,7 @@ def y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = T
 
         if(debug_general):
             cv2.imshow('test', img_nparray)
-            cv2.waitKey(0)
+            cv2.waitKey(1)
 
         cv2.imwrite(out_imgfile, img_nparray)
 
