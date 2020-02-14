@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # 2020. 02. 12 sangkny for verifying the Nexquad Lenet performance
 import sys
 from caffenet import *
@@ -98,7 +99,7 @@ if __name__ == '__main__':
     output_layer = "fc_blob3" # correct the proper output layer, default:'prob'
     protofile = args.protofile
     weightfile = args.weightfile
-    imgfile =  'C:\\Users\\mmc\\Downloads\\20200212_test_result\\1\\20200212_10_2.jpg' #args.imgfile
+    imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_125218_3.jpg' #args.imgfile
     model_height = args.height
     model_width = args.width
     color_input = True
@@ -175,5 +176,7 @@ if __name__ == '__main__':
             else:
                 pytorch_prob = pytorch_blobs[output_layer].data.view(-1).numpy()
             # caffe_prob = caffe_blobs[output_layer].data[0]
+            print('all prob:')
+            print(pytorch_prob)
             print('pytorch classification top1: %f %s' % (pytorch_prob.max(), synset_dict[pytorch_prob.argmax()]))
 

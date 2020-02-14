@@ -1,4 +1,4 @@
-#
+# -*- coding: utf-8 -*-
 # 20200213 by sangkny
 
 # y2img : convert y image to normal format
@@ -36,7 +36,8 @@ def y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = T
             cv2.imshow('test', img_nparray)
             cv2.waitKey(1)
 
-        cv2.imwrite(out_imgfile, img_nparray)
+        if not cv2.imwrite(out_imgfile, img_nparray):
+            print('Writing Error: %s' %out_imgfile)
 
     else:
         print('File No Exists: %s' %in_y_file)
