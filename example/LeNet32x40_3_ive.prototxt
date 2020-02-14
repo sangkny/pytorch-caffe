@@ -2,7 +2,7 @@ name: "LeNet32x40_3"
 layer {
   name: "nexpa"
   type: "Data"
-  top: "data"
+  top: "data1"
   top: "label"
   include {
     phase: TRAIN
@@ -20,7 +20,7 @@ layer {
 layer {
   name: "nexpa"
   type: "Data"
-  top: "data"
+  top: "data1"
   top: "label"
   include {
     phase: TEST
@@ -38,7 +38,7 @@ layer {
 layer {
   name: "conv1"
   type: "Convolution"
-  bottom: "data"
+  bottom: "data1"
   top: "conv_blob1"
   convolution_param {
     num_output: 50
@@ -221,20 +221,20 @@ layer {
     }
   }
 }
-#layer {
-#  name: "accuracy"
-#  type: "Accuracy"
-#  bottom: "fc_blob3"
-#  bottom: "label"
-#  top: "accuracy"
-#  include {
-#    phase: TEST
-#  }
-#}
-#layer {
-#  name: "loss"
-#  type: "SoftmaxWithLoss"
-#  bottom: "fc_blob3"
-#  bottom: "label"
-#  top: "loss"
-#}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "fc_blob3"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST 
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "fc_blob3"
+  bottom: "label"
+  top: "loss"
+}
