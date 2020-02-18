@@ -99,7 +99,7 @@ if __name__ == '__main__':
     output_layer = "fc_blob3" # correct the proper output layer, default:'prob'
     protofile = args.protofile
     weightfile = args.weightfile
-    imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_125218_3.jpg' #args.imgfile
+    imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_132301_7.jpg' #args.imgfile
     model_height = args.height
     model_width = args.width
     color_input = True
