@@ -62,6 +62,16 @@ def forward_pytorch(protofile, weightfile, image):
     t1 = time.time()
     return t1 - t0, blobs, net.models, net
 
+def Caffe2PytorchNet(protofile, weightfile):
+    net = CaffeNet(protofile, width=args.width, height=args.height, channels=1, omit_data_layer=True, phase='TEST')
+    if args.cuda:
+        net.cuda()
+    #print(net)
+    net.load_weights(weightfile)
+    net.eval()
+
+    return net
+
 
 # Reference from:
 def forward_caffe(protofile, weightfile, image):
@@ -99,7 +109,8 @@ if __name__ == '__main__':
     output_layer = "fc_blob3" # correct the proper output layer, default:'prob'
     protofile = args.protofile
     weightfile = args.weightfile
-    imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_132301_7.jpg' #args.imgfile
+    #imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_132301_7.jpg' #args.imgfile
+    imgfile = './data/cat.jpg'
     model_height = args.height
     model_width = args.width
     color_input = True
@@ -120,10 +131,24 @@ if __name__ == '__main__':
     # ----------------------------------
     image = image.reshape(1, 1, model_height, model_width)
 
-    time_pytorch, pytorch_blobs, pytorch_models, pytorch_net = forward_pytorch(protofile, weightfile, image)
+    #time_pytorch, pytorch_blobs, pytorch_models, pytorch_net = forward_pytorch(protofile, weightfile, image)
+    pytorch_net = Caffe2PytorchNet(protofile, weightfile)
+    pytorch_models = pytorch_net.models
+
+    image = torch.from_numpy(image)
+    if args.cuda:
+        image = Variable(image.cuda())
+    else:
+        image = Variable(image)
+    t0 = time.time()
+    pytorch_blobs = pytorch_net(image)
+    t1 = time.time()
+
+    time_pytorch = t1-t0
+
     print('\n pytorch net \n')
     print(pytorch_net)
-    print('pytorch forward time %d' % time_pytorch)
+    print('pytorch forward time: %f msec' % (time_pytorch*1000))
 
     layer_names = pytorch_models.keys()
     blob_names = pytorch_blobs.keys()
