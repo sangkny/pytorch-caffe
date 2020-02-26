@@ -3,8 +3,6 @@
 # In a folder, all y images will be converted into formatted images.
 
 import os
-import cv2
-import sys
 import argparse
 
 from y2img import y2img as yToimg
