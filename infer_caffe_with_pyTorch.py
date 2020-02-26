@@ -121,9 +121,9 @@ if __name__ == '__main__':
     batchFlag = args.batchFlag  #batch flag
     #batchDir = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG'  # args.batchDir    # batch directory
 
-    #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\1' #args.batchDir    # batch directory
-    batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
-    gt_class = 0 #os.path.split(batchDir)[-1]  # ground truth class
+    batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\20200226\\work1\\1' #args.batchDir    # batch directory
+    #batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
+    gt_class = os.path.split(batchDir)[-1]  # ground truth class
 
     incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\incorrect' # incorrect folder base
 
