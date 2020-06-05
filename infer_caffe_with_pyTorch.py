@@ -17,9 +17,11 @@ import shutil # for copy2
 def load_image(imgfile, color_input):
     input_color = color_input
     image = caffe.io.load_image(imgfile, color=input_color)
+    # interpolating the image as below
     if input_color:
         transformer = caffe.io.Transformer(
             {'data': (1, 3, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
+
         transformer.set_transpose('data', (2, 0, 1))
         transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
         # transformer.set_mean('data', np.array([128]))
@@ -27,6 +29,7 @@ def load_image(imgfile, color_input):
         transformer.set_channel_swap('data', (2, 1, 0))
         image = transformer.preprocess('data', image)
         image = image.reshape(1, 3, args.height, args.width)
+
     else:
         transformer = caffe.io.Transformer(
             {'data': (1, 1, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
@@ -105,7 +108,7 @@ if __name__ == '__main__':
     parser.add_argument('--meanR', default=123, type=float)
     parser.add_argument('--scale', default=255, type=float)
     parser.add_argument('--synset_words', default='', type=str)
-    parser.add_argument('--cuda', action='store_true', help='enables cuda')
+    parser.add_argument('--cuda', action='store_true', help='enables cuda')    # gives False which is faster than using GPU
     parser.add_argument('--batchFlag', default=True, type=int, help='batch processing Flag')
     parser.add_argument('--batchDir', default='./data', type=str, help='select a folder for batch process')
 
@@ -121,11 +124,14 @@ if __name__ == '__main__':
     batchFlag = args.batchFlag  #batch flag
     #batchDir = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG'  # args.batchDir    # batch directory
 
-    batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\0' #args.batchDir    # batch directory
+    # --- Set the following information to test the model performance after changing the model in the args model info --
+    #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\0' #args.batchDir    # batch directory
+    batchDir = 'E:\\nexquad-ralated\\5cameras\\test10\\1'  # args.batchDir    # batch directory
     #batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
     gt_class = os.path.split(batchDir)[-1]  # ground truth class
 
-    incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\incorrect' # incorrect folder base
+    #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\incorrect_20200512_v3_all_data' # incorrect folder base
+    incFileDir = 'E:\\nexquad-ralated\\5cameras\\test10\\incorrect_20200602_data_20200604_40x32'  # incorrect folder base
 
     model_height = args.height
     model_width = args.width
@@ -186,6 +192,7 @@ if __name__ == '__main__':
         cv2.waitKey(1)
         # ----------------------------------
         image = image.reshape(1, 1, model_height, model_width)
+        # --- > image = image.reshape(1, 1, model_width, model_height)
         image = torch.from_numpy(image)
         if args.cuda:
             image = Variable(image.cuda())
