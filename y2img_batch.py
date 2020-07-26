@@ -9,8 +9,8 @@ from y2img import y2img as yToimg
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch Conversion from Y to Image')
-    parser.add_argument('--srcDir', default='E:/nexquad-ralated/5cameras/gather_image_2/gather_image_2/1', type=str, help='base directory')
-    parser.add_argument('--tgtDir', default='E:/nexquad-ralated/5cameras/gather_image_2/1', type=str, help='target directory')
+    parser.add_argument('--srcDir', default='E:/nexquad-ralated/5cameras/gather_images/gather_image_4_20200605_112009/0', type=str, help='base directory')
+    parser.add_argument('--tgtDir', default='E:/nexquad-ralated/5cameras/gather_images/jpgs/gather_image_4_20200605_112009/0', type=str, help='target directory')
     parser.add_argument('--img_height', default=40, type=int, help='y image size: height')
     parser.add_argument('--img_width', default=32, type=int, help='y image size: width')
     parser.add_argument('--srcExt', default='y', type=str, help='input extension')
@@ -35,7 +35,9 @@ if __name__ == '__main__':
 
     for file in files:
         if(str(file.split('.')[-1]).lower() == str(in_file_ext).lower()):
-            new_file = file.split('.')[:-1][0] + '.' + out_file_ext
+            #new_file = file.split('.')[:-1][0] + '.' + out_file_ext
+            new_file = file.replace('.'+in_file_ext, '.'+out_file_ext)
+            #new_file.replace(old='.'+in_file_ext, new='.'+ out_file_ext)
             src_full_path = srcDir + '/' + file
             tgt_full_path = tgtDir + '/' + new_file
             if not os.path.isdir(tgtDir):

@@ -125,13 +125,13 @@ if __name__ == '__main__':
     #batchDir = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG'  # args.batchDir    # batch directory
 
     # --- Set the following information to test the model performance after changing the model in the args model info --
-    #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\0' #args.batchDir    # batch directory
-    batchDir = 'E:\\nexquad-ralated\\5cameras\\test10\\1'  # args.batchDir    # batch directory
+    batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\1' #args.batchDir    # batch directory
+    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_image_4_20200605_103329\\1'  # args.batchDir    # batch directory
     #batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
     gt_class = os.path.split(batchDir)[-1]  # ground truth class
 
-    #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\incorrect_20200512_v3_all_data' # incorrect folder base
-    incFileDir = 'E:\\nexquad-ralated\\5cameras\\test10\\incorrect_20200602_data_20200604_40x32'  # incorrect folder base
+    incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\incorrect_20200726_v3_all_data' # incorrect folder base
+    #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_image_4_20200605_103329\\incorrect_20200602_data_20200604_40x32'  # incorrect folder base
 
     model_height = args.height
     model_width = args.width
