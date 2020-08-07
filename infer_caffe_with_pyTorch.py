@@ -69,8 +69,8 @@ def forward_pytorch(protofile, weightfile, image):
     t1 = time.time()
     return t1 - t0, blobs, net.models, net
 
-def Caffe2PytorchNet(protofile, weightfile):
-    net = CaffeNet(protofile, width=args.width, height=args.height, channels=1, omit_data_layer=True, phase='TEST')
+def Caffe2PytorchNet(protofile, weightfile, ch_num = 1):
+    net = CaffeNet(protofile, width=args.width, height=args.height, channels=ch_num, omit_data_layer=True, phase='TEST')
     if args.cuda:
         net.cuda()
     #print(net)
@@ -102,6 +102,7 @@ if __name__ == '__main__':
     parser.add_argument('--weightfile', default='', type=str)
     parser.add_argument('--imgfile', default='', type=str)
     parser.add_argument('--height', default=224, type=int)
+    parser.add_argument('--channels', default=1, type=int, help='number of channels (default: 1)')
     parser.add_argument('--width', default=224, type=int)
     parser.add_argument('--meanB', default=104, type=float)
     parser.add_argument('--meanG', default=117, type=float)
@@ -125,25 +126,30 @@ if __name__ == '__main__':
     #batchDir = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG'  # args.batchDir    # batch directory
 
     # --- Set the following information to test the model performance after changing the model in the args model info --
-    batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\1' #args.batchDir    # batch directory
-    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_image_4_20200605_103329\\1'  # args.batchDir    # batch directory
+    #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\1' #args.batchDir    # batch directory
+    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\1'  # args.batchDir
+    # E:\nexquad-ralated\5cameras\20200807\lenet40x32_20200729_4phase_20200804_171435_1440x1080
+    batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200807_30000\\1'  # args.batchDir
+
     #batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
     gt_class = os.path.split(batchDir)[-1]  # ground truth class
 
-    incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\incorrect_20200726_v3_all_data' # incorrect folder base
-    #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_image_4_20200605_103329\\incorrect_20200602_data_20200604_40x32'  # incorrect folder base
-
+    #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\incorrect_20200629_v3_all_data_60000' # incorrect folder base
+    #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\incorrect_20200729_data_40x32_58500'  # incorrect folder base
+    incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200807_30000\\incorrect_30000'  # incorrect folder base
     model_height = args.height
     model_width = args.width
-    color_input = True
+    model_channels = 3 # args.channels
+    color_input = True if(model_channels==3) else False
     describe_layer = False
     Net_display_once = True
     save_inc_files = True
 
 
+
     # --  load Network and model from config and caffemodel files
     # time_pytorch, pytorch_blobs, pytorch_models, pytorch_net = forward_pytorch(protofile, weightfile, image)
-    pytorch_net = Caffe2PytorchNet(protofile, weightfile)
+    pytorch_net = Caffe2PytorchNet(protofile, weightfile, ch_num=model_channels)
     pytorch_net.set_verbose(False)                          # display flow inside the network on/off
     pytorch_models = pytorch_net.models
     layer_names = pytorch_models.keys()
@@ -184,15 +190,18 @@ if __name__ == '__main__':
         # 1 channel
         # convert already bgr in previous step
         # gray = np.dot(image[...,:3],[0.114, 0.587, 0.299])
-        image = image[0, 0, :, :]
+        if(color_input==False): # or model_channels =1
+            image = image[0, 0, :, :]
 
-        # --------------------show the given image ------------
-        import cv2
-        cv2.imshow('test', np.array(image/255))
-        cv2.waitKey(1)
-        # ----------------------------------
-        image = image.reshape(1, 1, model_height, model_width)
-        # --- > image = image.reshape(1, 1, model_width, model_height)
+            # --------------------show the given image ------------
+            import cv2
+            cv2.imshow('test', np.array(image/255))
+            cv2.waitKey(1)
+            # ----------------------------------
+            image = image.reshape(1, 1, model_height, model_width)
+        else: # image should have 3 channels and its shape(1,3,40,32)
+            print(image.shape)
+
         image = torch.from_numpy(image)
         if args.cuda:
             image = Variable(image.cuda())
