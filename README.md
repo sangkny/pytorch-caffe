@@ -3,6 +3,7 @@ This tool loads caffe prototxt and weights and infer the given file(s: in a fold
 
 ## y2img_batch.py
 This file converts a raw y data to commonly used image files including jpg and png.
+raw -> 3channels updated on 20200729
  
 ## caffe2pytorch
 This tool aims to load caffe prototxt and weights directly in pytorch without explicitly converting model from caffe to pytorch.

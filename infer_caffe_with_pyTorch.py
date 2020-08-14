@@ -22,18 +22,18 @@ def load_image(imgfile, color_input):
         transformer = caffe.io.Transformer(
             {'data': (1, 3, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
 
-        transformer.set_transpose('data', (2, 0, 1))
-        transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
+        transformer.set_transpose('data', (2, 0, 1)) # channel first
+        transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR])) # mean extraction
         # transformer.set_mean('data', np.array([128]))
-        transformer.set_raw_scale('data', args.scale)
-        transformer.set_channel_swap('data', (2, 1, 0))
+        transformer.set_raw_scale('data', args.scale) # scale
+        transformer.set_channel_swap('data', (2, 1, 0)) # RGB -> BGR
         image = transformer.preprocess('data', image)
-        image = image.reshape(1, 3, args.height, args.width)
+        image = image.reshape(1, 3, args.height, args.width) # channel extension for deep learning model input
 
     else:
         transformer = caffe.io.Transformer(
             {'data': (1, 1, args.height, args.width)})  # sangkny was (1,3, args.height, args.width) is color image
-        # transformer.set_transpose('data', (2, 0, 1))
+        # transformer.set_transpose('data', (2, 0, 1)) # not required for gray
         # transformer.set_mean('data', np.array([args.meanB, args.meanG, args.meanR]))
         transformer.set_mean('data', np.array([args.meanB]))
         transformer.set_raw_scale('data', args.scale)
@@ -117,6 +117,7 @@ if __name__ == '__main__':
     print(args)
     # ---- parameter settings ---------------
     output_layer = "fc_blob3" # correct the proper output layer, default:'prob'
+
     protofile = args.protofile
     weightfile = args.weightfile
     #imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_132301_7.jpg' #args.imgfile
@@ -127,16 +128,19 @@ if __name__ == '__main__':
 
     # --- Set the following information to test the model performance after changing the model in the args model info --
     #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\1' #args.batchDir    # batch directory
-    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\1'  # args.batchDir
-    # E:\nexquad-ralated\5cameras\20200807\lenet40x32_20200729_4phase_20200804_171435_1440x1080
-    batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200807_30000\\1'  # args.batchDir
+    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\0'  # args.batchDir
+    #E:\nexquad-ralated\5cameras\20200807\lenet40x32_20200729_4phase_20200804_171435_1440x1080
+    #batchDir = 'E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_20200807_20200811_042735/1'  # args.batchDir
+    batchDir = 'D:\\sangkny\\pyTest\MLDL\\codes\\parkingClassify-master\\augimg_20200812_3channels_br04\\1' #args.batchDir    # batch directory
 
     #batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
     gt_class = os.path.split(batchDir)[-1]  # ground truth class
 
     #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\incorrect_20200629_v3_all_data_60000' # incorrect folder base
     #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\incorrect_20200729_data_40x32_58500'  # incorrect folder base
-    incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200807_30000\\incorrect_30000'  # incorrect folder base
+    incFileDir = 'E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_20200807_20200811_042735/incorrect_3chs_br04_30000_br04'  # incorrect folder base
+    #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\incorrect_40000'  # incorrect folder base
+    #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\incorrect_13500'  # incorrect folder base
     model_height = args.height
     model_width = args.width
     model_channels = 3 # args.channels
@@ -144,6 +148,7 @@ if __name__ == '__main__':
     describe_layer = False
     Net_display_once = True
     save_inc_files = True
+    debug_text = False
 
 
 
@@ -163,7 +168,7 @@ if __name__ == '__main__':
     outputs =[]
     total_times = list()
     inc_Files = list() # incorrect files
-    displayfreq = 100
+    displayfreq = 1000
     # -------------- variables end ---------------------------
 
     # --  batch process or single process
@@ -184,7 +189,7 @@ if __name__ == '__main__':
     allfiles = len(refinedFiles)  # all files to be processed
 
     # processing the given file(s)
-    for file in refinedFiles:
+    for fileidx, file in enumerate(refinedFiles):
         image = load_image(file, color_input)
         # convert the image according to the proper input for protofile
         # 1 channel
@@ -199,8 +204,9 @@ if __name__ == '__main__':
             cv2.waitKey(1)
             # ----------------------------------
             image = image.reshape(1, 1, model_height, model_width)
-        else: # image should have 3 channels and its shape(1,3,40,32)
-            print(image.shape)
+        else:# image should have 3 channels and its shape(1,3,40,32)
+            if(debug_text):
+                print(image.shape)
 
         image = torch.from_numpy(image)
         if args.cuda:
@@ -217,10 +223,10 @@ if __name__ == '__main__':
             print('\n pytorch net \n')
             print(pytorch_net)
             Net_display_once = False
+        if (debug_text):
+            print('pytorch forward time for the given image: %f msec' % (time_pytorch*1000))
+            print('------------ Classification ------------')
 
-        print('pytorch forward time for the given image: %f msec' % (time_pytorch*1000))
-
-        print('------------ Classification ------------')
         pytorch_blobs = pytorch_net.blobs
         blob_names = pytorch_blobs.keys()
         if output_layer in blob_names:
@@ -229,9 +235,14 @@ if __name__ == '__main__':
             else:
                 pytorch_prob = pytorch_blobs[output_layer].data.view(-1).numpy()
             # caffe_prob = caffe_blobs[output_layer].data[0]
-            print('all prob:')
-            print(pytorch_prob)
-            print('pytorch classification top1: %f %s' % (pytorch_prob.max(), synset_dict[pytorch_prob.argmax()]))
+            if(debug_text):
+                print('all prob -> confidence : {}'.format(F.softmax(pytorch_blobs[output_layer].data.view(-1), dim=0))) # softmax
+                print('final fc data: {}'.format(pytorch_prob))
+                print('pytorch classification top1: %f %s' % (pytorch_prob.max(), synset_dict[pytorch_prob.argmax()]))
+            else:
+                if fileidx % displayfreq == 0:
+                    print("processing .... {} %".format(float(fileidx)*100./len(refinedFiles)))
+
             outputs.append(pytorch_prob.argmax())
             if(save_inc_files and (int(pytorch_prob.argmax()) is not int(gt_class))):
                 # save incorrect files
@@ -256,9 +267,6 @@ if __name__ == '__main__':
             print('{}: {}\n'.format(_idx, _file))
             _dfile = os.path.join(newFilesDir, os.path.split(_file)[-1]) # or _file.split(os.path.sep)[-1]
             shutil.copy2(_file, _dfile)
-
-
-
 
     # ---------------------------- display parameters -----------------------
     if describe_layer:

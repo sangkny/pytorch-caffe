@@ -9,13 +9,13 @@ from y2img import y2img as yToimg
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch Conversion from Y to Image')
-    parser.add_argument('--srcDir', default='E:/nexquad-ralated/5cameras/20200807/lenet40x32_20200729_4phase_20200804_171435_1440x1080/0', type=str, help='base directory')
-    parser.add_argument('--tgtDir', default='E:/nexquad-ralated/5cameras/gather_images/jpgs/lenet40x32_20200729_4phase_20200804_171435_1440x1080/0', type=str, help='target directory')
+    parser.add_argument('--srcDir', default='E:/nexquad-ralated/5cameras/gather_images/3channels/vpd_images_20200807_20200811_071506/1', type=str, help='base directory')
+    parser.add_argument('--tgtDir', default='E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_20200807_20200811_071506/1', type=str, help='target directory')
     parser.add_argument('--img_height', default=40, type=int, help='y image size: height')
     parser.add_argument('--img_width', default=32, type=int, help='y image size: width')
     parser.add_argument('--srcExt', default='y', type=str, help='input extension')
     parser.add_argument('--tgtExt', default='jpg', type=str, help='target extension')
-    parser.add_argument('--showImg', default=False, type=bool, help='flag to show images during process')
+    parser.add_argument('--showImg', default=True, type=bool, help='flag to show images during process')
     parser.add_argument('--saveImg', default=True, type=bool, help=' flag to save generated images')
     args = parser.parse_args()
 
