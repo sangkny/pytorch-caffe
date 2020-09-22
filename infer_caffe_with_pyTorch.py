@@ -112,6 +112,7 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', action='store_true', help='enables cuda')    # gives False which is faster than using GPU
     parser.add_argument('--batchFlag', default=True, type=int, help='batch processing Flag')
     parser.add_argument('--batchDir', default='./data', type=str, help='select a folder for batch process')
+    parser.add_argument('--conf_th', default=0.8, type=float, help='confidence threshold')
 
     args = parser.parse_args()
     print(args)
@@ -121,26 +122,30 @@ if __name__ == '__main__':
     protofile = args.protofile
     weightfile = args.weightfile
     #imgfile =  'C:\\Users\\mmc\\Downloads\\20200214_test_result\\1\\vpdImage_19701010_132301_7.jpg' #args.imgfile
-    imgfile = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG\\L_sg_00085.bmp'
+    #imgfile = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG\\L_sg_00085.bmp'
     #imgfile = './data/cat.jpg'
     batchFlag = args.batchFlag  #batch flag
     #batchDir = 'C:\\Users\\mmc\\Downloads\\Train.Haar\\side\\left\\Left_SG'  # args.batchDir    # batch directory
 
     # --- Set the following information to test the model performance after changing the model in the args model info --
-    #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\1' #args.batchDir    # batch directory
-    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\0'  # args.batchDir
+    batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\3channels\\40x32\\0' #args.batchDir    # batch directory
+    #batchDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\3channels\\haar\\1'  # args.batchDir    # batch directory
+    #batchDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\20200826_3chs_data_br04_ver\\train\\0'  # args.batchDir
     #E:\nexquad-ralated\5cameras\20200807\lenet40x32_20200729_4phase_20200804_171435_1440x1080
-    #batchDir = 'E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_20200807_20200811_042735/1'  # args.batchDir
-    batchDir = 'D:\\sangkny\\pyTest\MLDL\\codes\\parkingClassify-master\\augimg_20200812_3channels_br04\\1' #args.batchDir    # batch directory
+    #'D:/sangkny/pyTest/MLDL/NexQuadDataSets/3channels/40x32-ext/0'
+    #batchDir = 'E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_model_v20200916_20200919_202553/0'  # args.batchDir
+    #batchDir = 'D:/sangkny/pyTest/MLDL/NexQuadDataSets/3channels/40x32/0'  # args.batchDir
+    #batchDir = 'D:\\sangkny\\pyTest\MLDL\\codes\\parkingClassify-master\\augimg_20200812_3channels_br04\\1' #args.batchDir    # batch directory
 
     #batchDir = 'C:\\Users\\mmc\\Downloads\\new_sample\\nobj'  # args.batchDir    # batch directory
     gt_class = os.path.split(batchDir)[-1]  # ground truth class
 
     #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\incorrect_20200629_v3_all_data_60000' # incorrect folder base
-    #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\incorrect_20200729_data_40x32_58500'  # incorrect folder base
-    incFileDir = 'E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_20200807_20200811_042735/incorrect_3chs_br04_30000_br04'  # incorrect folder base
+    #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\20200826_3chs_data_br04_ver\\train\\incorrect_20200918_lr00001_4_3chs_b512_br04_High_30000'  # incorrect folder base
+    #incFileDir = 'E:/nexquad-ralated/5cameras/gather_images/jpgs/3channels/vpd_images_model_v20200916_20200919_202553/incorrect_20200918_lr00001_4_3chs_b512_br04_SVG_200000'  # incorrect folder base
     #incFileDir = 'E:\\nexquad-ralated\\5cameras\\gather_images\\jpgs\\gather_dataset_20200608\\incorrect_40000'  # incorrect folder base
-    #incFileDir = 'D:\\sangkny\\pyTest\\MLDL\\NexQuadDataSets\\4phase\\19-20\\incorrect_13500'  # incorrect folder base
+    incFileDir = 'D:/sangkny/pyTest/MLDL/NexQuadDataSets/3channels/40x32/incorrect_20200920_lr00001_4_3chs_b512_br04_SVG_185000'  # incorrect folder base
+    #incFileDir = 'D:/sangkny/pyTest/MLDL/NexQuadDataSets/3channels/haar/incorrect_20200916_lr00001_4_3chs_b512_br04_High_200000'  # incorrect folder base
     model_height = args.height
     model_width = args.width
     model_channels = 3 # args.channels
@@ -148,7 +153,10 @@ if __name__ == '__main__':
     describe_layer = False
     Net_display_once = True
     save_inc_files = True
+    save_inc_files_with_conf = True # file name extension with confidence level
+    save_inc_files_All = False # save all regardless of confidence threshold
     debug_text = False
+    confidence_threshold = args.conf_th
 
 
 
@@ -167,7 +175,8 @@ if __name__ == '__main__':
     refinedFiles = list()
     outputs =[]
     total_times = list()
-    inc_Files = list() # incorrect files
+    inc_Files = list()  # incorrect files
+    inc_Probes = list() # incorrect file probabilities
     displayfreq = 1000
     # -------------- variables end ---------------------------
 
@@ -236,7 +245,12 @@ if __name__ == '__main__':
                 pytorch_prob = pytorch_blobs[output_layer].data.view(-1).numpy()
             # caffe_prob = caffe_blobs[output_layer].data[0]
             if(debug_text):
-                print('all prob -> confidence : {}'.format(F.softmax(pytorch_blobs[output_layer].data.view(-1), dim=0))) # softmax
+                print("file:{}".format(file))
+                print('all (softmax(sigmoid)) prob-> confidence : {}'.format(
+                    torch.softmax(torch.sigmoid(pytorch_blobs[output_layer].data.view(-1)/255), dim=0)))  # softmax after sigmoid for normalized value
+                print('softmax prob -> confidence : {}'.format(F.softmax(pytorch_blobs[output_layer].data.view(-1)/255, dim=0))) # softmax for normalized value
+                if np.max(F.softmax(pytorch_blobs[output_layer].data.view(-1)/255, dim=0).numpy()) < 0.75:
+                    print('-------------------- confidence is too low ------------------------------------------{}'.format(torch.softmax(pytorch_blobs[output_layer].data.view(-1)/255, dim=0)))
                 print('final fc data: {}'.format(pytorch_prob))
                 print('pytorch classification top1: %f %s' % (pytorch_prob.max(), synset_dict[pytorch_prob.argmax()]))
             else:
@@ -247,6 +261,7 @@ if __name__ == '__main__':
             if(save_inc_files and (int(pytorch_prob.argmax()) is not int(gt_class))):
                 # save incorrect files
                 inc_Files.append(file)
+                inc_Probes.append(np.max(F.softmax(pytorch_blobs[output_layer].data.view(-1)/255, dim=0).numpy()))
 
     # network inference ends
     avg_time = np.sum(total_times)/allfiles
@@ -263,11 +278,22 @@ if __name__ == '__main__':
             #create all intermediate folders : os.makedirs(path), a single folder: os.mkdir(path)
 
         print(' *&* writing incorrect files to {} ... \n'.format(newFilesDir))
+        assert(len(inc_Files)==len(inc_Probes))
+        skip_count = 0;
         for _idx, _file in enumerate(inc_Files):
-            print('{}: {}\n'.format(_idx, _file))
-            _dfile = os.path.join(newFilesDir, os.path.split(_file)[-1]) # or _file.split(os.path.sep)[-1]
-            shutil.copy2(_file, _dfile)
-
+            if confidence_threshold <= round(float(inc_Probes[_idx]),5) or save_inc_files_All:
+                print('{}: {} --> prob: {}\n'.format(_idx, _file, inc_Probes[_idx]))
+                if save_inc_files_with_conf: # save with confidence level
+                    des_file_name = os.path.split(_file)[-1]                        # full file name
+                    des_file_name_only = des_file_name[:des_file_name.rfind('.')]   # file name without ext
+                    des_file_ext = des_file_name[des_file_name.rfind('.')+1:]       # extension only
+                    _dfile = os.path.join(newFilesDir, des_file_name_only+'-'+'%.4f'%(inc_Probes[_idx])+'.'+des_file_ext) # or _file.split(os.path.sep)[-1]
+                else:
+                    _dfile = os.path.join(newFilesDir, os.path.split(_file)[-1]) # or _file.split(os.path.sep)[-1]
+                shutil.copy2(_file, _dfile)
+            else:
+                skip_count +=1
+        print('==>> skipped incorrect files due to confidence th:{} --> skip_count:{}'.format(confidence_threshold, skip_count))
     # ---------------------------- display parameters -----------------------
     if describe_layer:
         print('------------ Parameter Description ------------')

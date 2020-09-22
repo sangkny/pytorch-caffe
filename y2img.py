@@ -9,7 +9,7 @@ import os
 import numpy as np
 import cv2
 
-def y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = True):
+def y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = True, img_quality=100):
 
     file_height, file_width, file_debug = img_height, img_width, debug_general
     num_channels = 0
@@ -57,7 +57,7 @@ def y2img(in_y_file, out_imgfile, img_height=40, img_width=32, debug_general = T
             cv2.imshow('test', img_nparray)
             cv2.waitKey(1)
 
-        if not cv2.imwrite(out_imgfile, img_nparray):
+        if not cv2.imwrite(out_imgfile, img_nparray, [int(cv2.IMWRITE_JPEG_QUALITY), int(img_quality)]):
             print('Writing Error: %s' %out_imgfile)
 
     else:
